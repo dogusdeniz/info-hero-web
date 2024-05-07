@@ -1,21 +1,27 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { Head } from "@inertiajs/vue3";
+import UploadFile from "@/Components/UploadFile.vue";
+import Chat from "@/Components/Chat.vue";
+import { computed, nextTick } from "vue";
+
+const { user, files } = defineProps({
+    user: Object,
+    files: Array,
+});
+
+const anyFiles = computed(() => files.length > 0);
+
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AuthenticatedLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Dashboard</h2>
-        </template>
-
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">You're logged in!</div>
-                </div>
+        <div class="py-12 h-full">
+            <div class="max-w-7xl h-full mx-auto sm:px-6 lg:px-8">
+                <Chat v-if="anyFiles" :files="files" />
+                <UploadFile v-else />
             </div>
         </div>
     </AuthenticatedLayout>
