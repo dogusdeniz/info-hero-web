@@ -1,4 +1,7 @@
 <script setup>
+import { defineProps } from "vue";
+import Markdown from "./Markdown.vue";
+
 defineProps({
     name: String,
     message: String,
@@ -9,7 +12,7 @@ defineProps({
 </script>
 <template>
     <div>
-        <div class="py-2 px-3 text-base md:px-4 m-auto lg:px-1 xl:px-5">
+        <div class="p-3 text-base md:px-4 m-auto lg:px-1 xl:px-5">
             <div
                 class="mx-auto flex flex-1 gap-3 text-base juice:gap-4 juice:md:gap-6 md:max-w-3xl lg:max-w-[40rem] xl:max-w-[48rem]"
             >
@@ -37,7 +40,7 @@ defineProps({
                     </div>
                 </div>
                 <div class="relative flex w-full min-w-0 flex-col">
-                    <div class="font-semibold select-none">{{ name }}</div>
+                    <div class="font-semibold select-none mb-5">{{ name }}</div>
                     <div class="flex-col gap-1 md:gap-3">
                         <div class="flex flex-grow flex-col max-w-full">
                             <div
@@ -47,7 +50,7 @@ defineProps({
                                 class="min-h-[20px] text-message flex flex-col items-start whitespace-pre-wrap break-words overflow-x-auto gap-3"
                             >
                                 <div class="relative max-w-[90%]">
-                                    {{ message }}
+                                    <Markdown :value="message"></Markdown>
                                 </div>
                             </div>
                         </div>

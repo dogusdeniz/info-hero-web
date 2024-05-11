@@ -1,8 +1,8 @@
 <script setup>
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import Message from "./Message.vue";
 import MessageBox from "./MessageBox.vue";
-
+import GoToBottomButton from "./GoToBottomButton.vue";
 
 const messageHistory = ref([
     {
@@ -26,12 +26,13 @@ const submitChat = (value) => {
         message: value,
     });
 };
+
 </script>
 
 <template>
     <div class="flex flex-col h-full">
         <div class="flex-1">
-            <div class="relative h-full">
+            <div id="chat" class="relative h-full">
                 <Message
                     v-for="msg in messageHistory"
                     :key="msg.message"
