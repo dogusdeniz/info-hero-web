@@ -15,7 +15,7 @@ const anyFiles = computed(() => files.length > 0);
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Chat" />
 
     <AuthenticatedLayout>
         <div class="py-12 h-full">
