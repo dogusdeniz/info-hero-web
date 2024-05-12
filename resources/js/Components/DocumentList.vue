@@ -13,7 +13,7 @@ const page = usePage();
 
 const documents = ref(page.props.documents ?? []);
 
-const documentSelect = (document) => {
+const documentSelectToggle = (document) => {
     document.isSelected = !document.isSelected;
 };
 
@@ -104,7 +104,7 @@ const uploadDocument = () => {
                             ? 'bg-surface-secondary rounded-md'
                             : ''
                     "
-                    @click="() => documentSelect(document)"
+                    @click="() => documentSelectToggle(document)"
                 >
                     <div class="p-1">
                         <DocumentTextIcon
