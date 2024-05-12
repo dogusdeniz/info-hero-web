@@ -1,8 +1,8 @@
 <script setup>
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { ArrowUpCircleIcon, StopCircleIcon } from "@heroicons/vue/24/outline";
 
-const { modelValue, submitable, stopable } = defineProps({
+const props = defineProps({
     modelValue: String,
     submitable: {
         type: Boolean,
@@ -14,7 +14,9 @@ const { modelValue, submitable, stopable } = defineProps({
     },
 });
 
-const internalValue = ref(modelValue ?? "");
+const internalValue = ref(props.modelValue ?? "");
+
+const submitDisabled = computed(() => internalValue.value.trim() === "" || !props.submitable);
 
 const emit = defineEmits(["submit", "update:modelValue", "stop"]);
 
@@ -24,7 +26,7 @@ const updateModelValue = (event) => {
 };
 
 const submit = () => {
-    if (internalValue.value.trim() === "" || !submitable) {
+    if (internalValue.value.trim() === "" || !props.submitable) {
         return;
     }
 
@@ -38,24 +40,39 @@ const stop = () => {
     emit("stop");
 };
 
+const reset = () => {
+    internalValue.value = "";
+    const textarea = document.getElementById("prompt-textarea");
+    textarea.style.height = "52px";
+};
+
+const onClickSubmit = () => {
+    console.log("click");
+    if (props.submitable) {
+        console.log("submit");
+        submit();
+        reset();
+    }
+};
+
+const onClickStop = () => {
+    console.log("click");
+    if (props.stopable) {
+        console.log("stop");
+        stop();
+    }
+};
+
+const keyDown = (event) => {
+    if (event.key === "Enter" && !event.shiftKey && props.submitable) {
+        event.preventDefault();
+        submit();
+        reset();
+    }
+};
+
 nextTick(() => {
     const textarea = document.getElementById("prompt-textarea");
-    const sendButton = document.querySelector("#send-button");
-
-    function reset() {
-        textarea.value = "";
-        textarea.style.height = "52px";
-        textarea.style.overflowY = "hidden";
-        sendButton.disabled = true;
-    }
-
-    textarea.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && !event.shiftKey && submitable) {
-            event.preventDefault();
-            submit();
-            reset();
-        }
-    });
 
     textarea.addEventListener("input", () => {
         textarea.style.height = "auto";
@@ -67,18 +84,6 @@ nextTick(() => {
             textarea.style.overflowY = "auto";
         } else {
             textarea.style.overflowY = "hidden";
-        }
-        sendButton.disabled = textarea.value.trim() === "";
-    });
-
-    sendButton.addEventListener("click", () => {
-        if (submitable) {
-            submit();
-            reset();
-        }
-
-        if (stopable) {
-            stop();
         }
     });
 });
@@ -102,14 +107,23 @@ nextTick(() => {
                         style="height: 52px; overflow-y: hidden"
                         :value="internalValue"
                         @input="updateModelValue"
+                        @keydown="keyDown"
                     ></textarea>
                     <button
-                        disabled
+                        :disabled="submitDisabled"
                         class="absolute bottom-1.5 right-2 rounded-lg border border-black bg-white p-0.5 text-black transition-colors enabled:bg-white disabled:text-gray-400 disabled:opacity-10 dark:border-white dark:bg-white dark:hover:bg-white md:bottom-3 md:right-3"
                         id="send-button"
+                        v-if="submitable"
+                        @click="onClickSubmit"
                     >
-                        <ArrowUpCircleIcon class="h-6 w-6" v-if="submitable" />
-                        <StopCircleIcon class="h-6 w-6" v-if="stopable" />
+                        <ArrowUpCircleIcon class="h-6 w-6" />
+                    </button>
+                    <button
+                        class="absolute bottom-1.5 right-2 rounded-lg border border-black bg-white p-0.5 text-black transition-colors enabled:bg-white disabled:text-gray-400 disabled:opacity-10 dark:border-white dark:bg-white dark:hover:bg-white md:bottom-3 md:right-3"
+                        v-if="stopable"
+                        @click="onClickStop"
+                    >
+                        <StopCircleIcon class="h-6 w-6" />
                     </button>
                 </div>
             </div>

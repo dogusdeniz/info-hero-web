@@ -1,81 +1,112 @@
 <script setup>
-import { nextTick, ref, watch } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import { nextTick, reactive, ref, watch } from "vue";
 import Message from "./Message.vue";
 import MessageBox from "./MessageBox.vue";
 import Welcome from "./Welcome.vue";
+import SHA256 from "crypto-js/sha256";
+import Cookies from "js-cookie";
+import SSE from "@/Utils/server-sent-event";
+import DocumentController from "@/Utils/document-controller";
 
-const messageHistory = ref([
-    // {
-    //     id: "as12-asd123-asd123-asd123-asd123",
-    //     name: "You",
-    //     avatar: "https://lh3.googleusercontent.com/a/AEdFTp4akbZbEuEZsS2GlDHq_1YCI9jR0Md1SP8hsvyBIA=s96-c",
-    //     message: "Message : custome textarea component in html and vue",
-    //     messageAuthorRole: "user",
-    // },
-    // {
-    //     id: "as124-asd123-asd123-asd123-asd123",
-    //     name: "Info Hero",
-    //     avatar: "https://lh3.googleusercontent.com/a/AEdFTp4akbZbEuEZsS2GlDHq_1YCI9jR0Md1SP8hsvyBIA=s96-c",
-    //     message: "Info Hero can make mistakes. Check important info.",
-    //     messageAuthorRole: "user",
-    // },
-]);
+const page = usePage();
 
+const messageHistory = ref([]);
 const message = ref("");
+const avatar = ref(null);
+const submitable = ref(true);
+const stopable = ref(false);
+const sse = ref(null);
+
+const getGravatar = (email) => {
+    // Step 1: Hash your email address using SHA-256.
+    const hashedEmail = SHA256(email);
+    // Step 2: Construct the Gravatar URL.
+    const gravatarUrl = `https://www.gravatar.com/avatar/${hashedEmail}`;
+
+    return gravatarUrl;
+};
 
 const submitChat = (value) => {
+    if (avatar.value == null)
+        avatar.value = getGravatar(page.props.auth.user.email);
+
+    submitable.value = false;
+    stopable.value = true;
+
     const question = {
         // generate a random id
-        id: Math.random().toString(36).substring(2, 15),
+        messageId: Math.random().toString(36).substring(2, 15),
         name: "You",
-        avatar: "https://lh3.googleusercontent.com/a/AEdFTp4akbZbEuEZsS2GlDHq_1YCI9jR0Md1SP8hsvyBIA=s96-c",
+        avatar: avatar.value,
         message: value,
+        messageAuthorRole: "user",
     };
 
     messageHistory.value.push(question);
 
     const answer = {
         // generate a random id
-        id: Math.random().toString(36).substring(2, 15),
+        messageId: Math.random().toString(36).substring(2, 15),
         name: "Info Hero",
-        avatar: "https://lh3.googleusercontent.com/a/AEdFTp4akbZbEuEZsS2GlDHq_1YCI9jR0Md1SP8hsvyBIA=s96-c",
+        avatar: "/storage/images/logo.svg",
         message: "",
+        messageAuthorRole: "assistant",
     };
 
     messageHistory.value.push(answer);
 
-    const source = new EventSource(
-        "http://info-hero.local/api/chat?prompt=" + value
-    );
+    const url = route("chat");
 
-    source.addEventListener("update", (event) => {
-        // close connection if we receive the end event
-        if (event.data === "<END_STREAMING_SSE>") {
-            source.close();
-            return;
-        }
+    const csrf = Cookies.get("XSRF-TOKEN");
 
-        var text = event.data
+    const documents = DocumentController.getSelectedDocuments();
+
+    sse.value = new SSE({
+        "Content-Type": "application/json",
+        "X-XSRF-TOKEN": csrf,
+    });
+
+    sse.value.on("data", (data) => {
+        const text = data
             .replace(/\\n/g, "\n")
             .replace(/\\t/g, "\t")
             .replace(/\\r/g, "\r");
 
-        messageHistory.value[messageHistory.value.length - 1].message += text;
+        // update asnwer in the message history
+        const index = messageHistory.value.findIndex(
+            (msg) => msg.messageId === answer.messageId
+        );
 
-        console.log("update", text);
+        messageHistory.value[index].message += text;
+    })
+        .on("error", (error) => {
+            console.log("error", error);
 
-        // Trigger Vue reactivity to update the message in the template
-        nextTick();
-    });
+            submitable.value = true;
+            stopable.value = false;
+        })
+        .on("end", () => {
+            console.log("end");
 
-    source.addEventListener("error", (event) => {
-        console.log("error", event);
-        source.close();
-    });
+            submitable.value = true;
+            stopable.value = false;
+        })
+        .post(url, {
+            prompt: value,
+            contextFilter: {
+                docs_ids: documents.map((document) => document.uuid),
+            },
+        });
 };
 
 const stopChat = () => {
     console.info("Chat stopped");
+
+    sse.value.close();
+
+    submitable.value = true;
+    stopable.value = false;
 };
 </script>
 
@@ -85,13 +116,13 @@ const stopChat = () => {
             <div id="chat" class="relative h-full">
                 <Welcome v-if="messageHistory.length == 0" />
                 <Message
-                    v-for="msg in messageHistory"
-                    :key="msg.message"
+                    v-for="(msg, index) in messageHistory"
+                    :key="index"
                     :name="msg.name"
                     :avatar="msg.avatar"
-                    :message="msg.message"
                     :message-author-role="msg.messageAuthorRole"
-                    :message-id="msg.id"
+                    :message-id="msg.messageId"
+                    :message="msg.message"
                 />
             </div>
         </div>
@@ -100,8 +131,8 @@ const stopChat = () => {
                 @submit="submitChat"
                 @stop="stopChat"
                 v-model="message"
-                :submitable="true"
-                :stopable="false"
+                :submitable="submitable"
+                :stopable="stopable"
             />
         </div>
     </div>

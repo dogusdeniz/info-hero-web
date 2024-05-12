@@ -1,11 +1,11 @@
 <script setup>
-import { defineProps } from "vue";
+import { defineProps, watch } from "vue";
 import Markdown from "./Markdown.vue";
 
 defineProps({
     name: String,
-    message: String,
     avatar: String,
+    message: String,
     messageId: String,
     messageAuthorRole: String,
 });
@@ -30,7 +30,7 @@ defineProps({
                                         width="24"
                                         height="24"
                                         decoding="async"
-                                        class="rounded-sm"
+                                        class="rounded-sm text-primary"
                                         :src="avatar"
                                         style="color: transparent"
                                     />
@@ -50,7 +50,10 @@ defineProps({
                                 class="min-h-[20px] text-message flex flex-col items-start whitespace-pre-wrap break-words overflow-x-auto gap-3"
                             >
                                 <div class="relative max-w-[90%]">
-                                    <Markdown :value="message"></Markdown>
+                                    <div v-if="messageAuthorRole == 'user'">
+                                        {{ message }}
+                                    </div>
+                                    <Markdown v-else :value="message" />
                                 </div>
                             </div>
                         </div>

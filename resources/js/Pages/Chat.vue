@@ -19,7 +19,7 @@ const anyFiles = computed(() => documents.length > 0);
     <AuthenticatedLayout>
         <div class="pt-12 h-full">
             <div class="max-w-7xl h-full mx-auto sm:px-6 lg:px-8">
-                <Chat v-if="anyFiles" :files="documents" />
+                <Chat v-if="anyFiles" />
                 <UploadFile v-else />
             </div>
         </div>

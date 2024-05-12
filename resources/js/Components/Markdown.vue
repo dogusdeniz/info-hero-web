@@ -22,6 +22,16 @@ renderedValue.value = micromark(props.value, {
 nextTick(() => {
     hljs.highlightAll();
 });
+
+watch(() => props.value, (newValue) => {
+    renderedValue.value = micromark(newValue, {
+        extensions: [gfm(), math()],
+        htmlExtensions: [gfmHtml(), mathHtml()],
+    });
+    nextTick(() => {
+        hljs.highlightAll();
+    });
+});
 </script>
 <template>
     <div class="markdown prose w-full break-words dark:prose-invert dark">

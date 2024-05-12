@@ -8,6 +8,7 @@ import {
 import { usePage } from "@inertiajs/vue3";
 import Loading from "./Loading.vue";
 import axios from "axios";
+import DocumentController from "@/Utils/document-controller";
 
 const page = usePage();
 
@@ -15,6 +16,12 @@ const documents = ref(page.props.documents ?? []);
 
 const documentSelectToggle = (document) => {
     document.isSelected = !document.isSelected;
+
+    if (document.isSelected) {
+        DocumentController.addSelectedDocument(document);
+    } else {
+        DocumentController.removeSelectedDocument(document);
+    }
 };
 
 const documentRemove = (document) => {
