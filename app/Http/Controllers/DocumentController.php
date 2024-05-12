@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\DocumentResource;
+use App\Libraries\LLama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -36,7 +37,16 @@ class DocumentController extends Controller
 
         $file = $request->file('file');
 
+        // Upload file to LLama
+        $response = LLama::documentUpload($file);
 
+        if ($response->status() !== 200) {
+            abort($response->status(), ['message' => 'Failed to upload document to LLama. Please try again.']);
+        }
+
+        $body = json_decode($response->content());
+
+        $docId = $body->data[0]->doc_id;
 
         // save the file to the storage
         $path = $file->store('documents');
@@ -46,8 +56,8 @@ class DocumentController extends Controller
         $size = $file->getSize();
 
         // Store the document
-        $document = $request->user->documents()->create([
-            'uuid' => Str::uuid(),
+        $document = $request->user()->documents()->create([
+            'uuid' => $docId,
             'name' => $name,
             'path' => $path,
             'ext' => $ext,
@@ -63,7 +73,7 @@ class DocumentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        abort(501, 'Not implemented');
     }
 
     /**
@@ -88,7 +98,15 @@ class DocumentController extends Controller
     public function destroy(Request $request, string $id)
     {
         // Delete the document
-        $document = $request->user->documents()->findOrFail($id);
+        $document = $request->user()->documents()->findOrFail($id);
+
+        // Delete the document from LLama
+        $response = LLama::deleteDocument($document->uuid);
+
+        if ($response->status() !== 204) {
+            abort($response->status(), ['message' => 'Failed to delete document from LLama. Please try again.']);
+        }
+
         $document->delete();
 
         return response()->noContent();
