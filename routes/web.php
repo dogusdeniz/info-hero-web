@@ -20,10 +20,7 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Dashboard', [
-        'user' => request()->user(),
-        'files' => [1]
-    ]);
+    return Inertia::render('Chat');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
