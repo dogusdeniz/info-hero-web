@@ -1,16 +1,15 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import UploadFile from "@/Components/UploadFile.vue";
 import Chat from "@/Components/Chat.vue";
 import { computed, nextTick } from "vue";
 
-const { user, files } = defineProps({
-    user: Object,
-    files: Array,
-});
+const page = usePage();
 
-const anyFiles = computed(() => files.length > 0);
+const documents = page.props.documents ?? [];
+
+const anyFiles = computed(() => documents.length > 0);
 
 </script>
 
@@ -20,7 +19,7 @@ const anyFiles = computed(() => files.length > 0);
     <AuthenticatedLayout>
         <div class="pt-12 h-full">
             <div class="max-w-7xl h-full mx-auto sm:px-6 lg:px-8">
-                <Chat v-if="anyFiles" :files="files" />
+                <Chat v-if="anyFiles" :files="documents" />
                 <UploadFile v-else />
             </div>
         </div>
