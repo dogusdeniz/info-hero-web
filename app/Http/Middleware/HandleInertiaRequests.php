@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Document;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -29,11 +30,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $documents = [];
+
+        if (auth()->check()) {
+            $documents = $request->user()->documents->toArray();
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'documents' => $documents
         ];
     }
 }
