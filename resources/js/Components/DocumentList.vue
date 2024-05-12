@@ -6,6 +6,8 @@ import {
     TrashIcon,
 } from "@heroicons/vue/24/outline";
 import { usePage } from "@inertiajs/vue3";
+import Loading from "./Loading.vue";
+import axios from "axios";
 
 const page = usePage();
 
@@ -21,25 +23,56 @@ const documentRemove = (document) => {
         return;
     }
 
-    documents.value = documents.value.filter((doc) => doc.id !== document.id);
+    // remove the document
+    axios
+        .delete(route("documents.destroy", document.id))
+        .then((response) => {
+            // reload the page
+            location.reload();
+        })
+        .catch((error) => {
+            console.log(error);
+            alert("An error occurred while deleting the document.");
+        });
 };
 
+const isLoading = ref(false);
+
+// select file and upload
 const uploadDocument = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".pdf";
+    input.accept = ".doc,.docx,.pdf,.csv";
     input.onchange = (e) => {
+        isLoading.value = true;
         const file = e.target.files[0];
-        documents.value.push({
-            id: documents.value.length + 1,
-            name: file.name,
-        });
-        input.remove();
+
+        const formData = new FormData();
+        formData.append("file", file);
+        axios
+            .post(route("documents.store"), formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            })
+            .then((response) => {
+                console.log(response);
+                // reload the page
+                location.reload();
+                isLoading.value = false;
+            })
+            .catch((error) => {
+                console.log(error);
+                // alert the error
+                alert("An error occurred while uploading the file.");
+                isLoading.value = false;
+            });
     };
     input.click();
 };
 </script>
 <template>
+    <Loading v-if="isLoading" />
     <div>
         <span
             class="block px-1 pt-1 text-sm font-medium text-white focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out"
@@ -60,12 +93,12 @@ const uploadDocument = () => {
                 </div>
             </li>
             <li
-                class="flex text-white text-sm mb-3"
+                class="flex overflow-x-hidden text-white text-sm mb-3"
                 v-for="document in documents"
                 :key="document.id"
             >
                 <div
-                    class="flex flex-1"
+                    class="flex flex-1 w-5/6"
                     :class="
                         document.isSelected
                             ? 'bg-surface-secondary rounded-md'
@@ -73,7 +106,7 @@ const uploadDocument = () => {
                     "
                     @click="() => documentSelect(document)"
                 >
-                    <div class="mr-3 p-1">
+                    <div class="p-1">
                         <DocumentTextIcon
                             class="h-5 w-5"
                             v-if="!document.isSelected"
@@ -83,7 +116,9 @@ const uploadDocument = () => {
                             v-if="document.isSelected"
                         />
                     </div>
-                    <div class="overflow-hidden truncate p-1 select-none">
+                    <div
+                        class="overflow-hidden truncate p-1 select-none w-full"
+                    >
                         {{ document.name }}
                     </div>
                 </div>
