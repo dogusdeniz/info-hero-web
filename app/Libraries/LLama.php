@@ -133,6 +133,7 @@ class LLama
                 $text = $remoteBody->read(10); // Adjust buffer size as needed
 
                 if (connection_aborted()) {
+                    $remoteBody->close();
                     break;
                 }
 
@@ -141,20 +142,21 @@ class LLama
                 $text = str_replace("\n", "\\n", $text);
 
                 try {
-                    $text = mb_convert_encoding($text, 'UTF-8', 'auto');
-                } catch (\Throwable $th) {
-                    //throw $th;
+                    $charset = mb_detect_encoding($text);
+                    $text = iconv($charset, 'UTF-8', $text);
+                } catch (\Exception $e) {
+                    // do nothing
                 }
 
-                echo "event: update\n";
-                echo 'data: ' . $text;
+                echo "event:update\n";
+                echo 'data:' . $text;
                 echo "\n\n";
                 ob_flush();
                 flush();
             }
 
-            echo "event: update\n";
-            echo 'data: <END_STREAMING_SSE>';
+            echo "event:end\n";
+            echo 'data:<END_STREAMING_SSE>';
             echo "\n\n";
             ob_flush();
             flush();
