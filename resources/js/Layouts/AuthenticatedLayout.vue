@@ -1,7 +1,12 @@
 <script setup>
 import NavLink from "@/Components/NavLink.vue";
 import DocumentList from "@/Components/DocumentList.vue";
+import { usePage } from "@inertiajs/vue3";
+import { ref } from "vue";
 
+const page = usePage();
+
+const user = ref(page.props.auth.user ?? {});
 </script>
 
 <template>
@@ -17,16 +22,27 @@ import DocumentList from "@/Components/DocumentList.vue";
                                     class="h-10 w-10 bg-avatar rounded-full flex items-center justify-center"
                                 >
                                     <span class="text-white text-2xl font-bold">
-                                        J
+                                        {{ user.name.charAt(0) }}
                                     </span>
                                 </div>
                             </div>
                             <div class="ml-3">
                                 <div class="text-base font-medium text-white">
-                                    John Doe
+                                    {{ user.name }}
                                 </div>
                                 <div class="text-sm font-medium text-gray-500">
-                                    <a href="#" class="text-primary">Log out</a>
+                                    <!-- <a href="#" class="text-primary">Log out</a> -->
+                                    <form
+                                        method="POST"
+                                        :action="route('logout')"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="text-primary"
+                                        >
+                                            Log out
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
