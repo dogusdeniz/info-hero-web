@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
 
     #region ------------------ Chat ------------------
 
-    Route::get('/api/chat', ChatController::class)->name('chat');
+    Route::post('/api/chat', ChatController::class)->name('chat');
 
     #endregion ------------------ Chat ------------------
 
