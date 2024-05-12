@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from "vue";
 import NavLink from "@/Components/NavLink.vue";
-import { DocumentTextIcon, TrashIcon } from "@heroicons/vue/24/outline";
+import DocumentList from "@/Components/DocumentList.vue";
+
 </script>
 
 <template>
@@ -40,43 +40,7 @@ import { DocumentTextIcon, TrashIcon } from "@heroicons/vue/24/outline";
                         >
                             Users
                         </NavLink>
-                        <div>
-                            <span
-                                class="block px-1 pt-1 text-sm font-medium text-white focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out"
-                            >
-                                Documents
-                                <span
-                                    class="bg-avatar px-2 py-1 rounded cursor-pointer select-none active:border-white active:border"
-                                >
-                                    +
-                                </span>
-                            </span>
-
-                            <ul
-                                class="mt-5 px-1 pt-1 max-h-[720px] overflow-auto"
-                            >
-                                <li>
-                                    <div class="text-center text-gray-500">
-                                        You don't have a document
-                                    </div>
-                                </li>
-                                <li class="flex text-white text-sm mb-3">
-                                    <div class="mr-3 p-1">
-                                        <DocumentTextIcon class="h-5 w-5" />
-                                    </div>
-                                    <div
-                                        class="overflow-hidden truncate p-1 select-none"
-                                    >
-                                        2024_04_25_Basel_III_Raporu.pdf
-                                    </div>
-                                    <div
-                                        class="ml-auto bg-avatar rounded p-1 active:border cursor-pointer"
-                                    >
-                                        <TrashIcon class="h-5 w-5" />
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                        <DocumentList />
                     </div>
                 </div>
             </nav>
