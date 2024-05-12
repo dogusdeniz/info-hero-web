@@ -14,7 +14,7 @@ defineProps({
     <div>
         <div class="p-3 text-base md:px-4 m-auto lg:px-1 xl:px-5">
             <div
-                class="mx-auto flex flex-1 gap-3 text-base juice:gap-4 juice:md:gap-6 md:max-w-3xl lg:max-w-[40rem] xl:max-w-[48rem]"
+                class="mx-auto flex flex-1 gap-3 text-base md:max-w-3xl lg:max-w-[40rem] xl:max-w-[48rem]"
             >
                 <div class="flex-shrink-0 flex flex-col relative items-end">
                     <div>

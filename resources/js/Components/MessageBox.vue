@@ -1,13 +1,22 @@
 <script setup>
 import { nextTick, ref } from "vue";
+import { ArrowUpCircleIcon, StopCircleIcon } from "@heroicons/vue/24/outline";
 
-const { modelValue } = defineProps({
+const { modelValue, submitable, stopable } = defineProps({
     modelValue: String,
+    submitable: {
+        type: Boolean,
+        default: true,
+    },
+    stopable: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const internalValue = ref(modelValue ?? "");
 
-const emit = defineEmits(["submit", "update:modelValue"]);
+const emit = defineEmits(["submit", "update:modelValue", "stop"]);
 
 const updateModelValue = (event) => {
     internalValue.value = event.target.value;
@@ -15,7 +24,7 @@ const updateModelValue = (event) => {
 };
 
 const submit = () => {
-    if (internalValue.value.trim() === "") {
+    if (internalValue.value.trim() === "" || !submitable) {
         return;
     }
 
@@ -23,6 +32,10 @@ const submit = () => {
     internalValue.value = internalValue.value.trim();
 
     emit("submit", internalValue.value);
+};
+
+const stop = () => {
+    emit("stop");
 };
 
 nextTick(() => {
@@ -37,7 +50,7 @@ nextTick(() => {
     }
 
     textarea.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
+        if (event.key === "Enter" && !event.shiftKey && submitable) {
             event.preventDefault();
             submit();
             reset();
@@ -59,7 +72,14 @@ nextTick(() => {
     });
 
     sendButton.addEventListener("click", () => {
-        reset();
+        if (submitable) {
+            submit();
+            reset();
+        }
+
+        if (stopable) {
+            stop();
+        }
     });
 });
 </script>
@@ -87,25 +107,9 @@ nextTick(() => {
                         disabled
                         class="absolute bottom-1.5 right-2 rounded-lg border border-black bg-white p-0.5 text-black transition-colors enabled:bg-white disabled:text-gray-400 disabled:opacity-10 dark:border-white dark:bg-white dark:hover:bg-white md:bottom-3 md:right-3"
                         id="send-button"
-                        @click="submit"
                     >
-                        <span class="" data-state="closed"
-                            ><svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                class="text-black dark:text-black"
-                            >
-                                <path
-                                    d="M7 11L12 6L17 11M12 18V7"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                ></path>
-                            </svg>
-                        </span>
+                        <ArrowUpCircleIcon class="h-6 w-6" v-if="submitable" />
+                        <StopCircleIcon class="h-6 w-6" v-if="stopable" />
                     </button>
                 </div>
             </div>
